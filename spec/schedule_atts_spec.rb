@@ -190,20 +190,44 @@ describe ScheduledModel do
         end
       end
     end
-    describe "adding and removing dates" do
+    describe "adding and removing additional and exception dates" do
       require 'ostruct'
       
       let(:scheduled_model){ ScheduledModel.new.tap{|m| m.schedule_attributes = schedule_attributes } }
-      let(:schedule_attributes){ { :repeat => '1', :start_date => '1-1-1985', :interval_unit => 'day', :interval => '3', :until_date => '7-1-1985', :ends => 'eventually' } }
+      let(:schedule_attributes){ { :repeat => '1', :start_date => '1-1-1985', :interval_unit => 'day', :interval => 1, :until_date => '4-1-1985', :ends => 'eventually' } }
       subject{ scheduled_model.schedule }
       
       context "when 0 dates are added" do
         its(:start_date){ should == Date.new(1985, 1, 1).to_time }
-        it{ subject.first(3).should == [Date.civil(1985, 1, 1), Date.civil(1985, 1, 4), Date.civil(1985, 1, 7)].map(&:to_time) }
+        it{ subject.all_occurrences.should == [Date.civil(1985, 1, 1), Date.civil(1985, 1, 2), Date.civil(1985, 1, 3), Date.civil(1985, 1, 4)].map(&:to_time) }
       end
       
       context "when 1 exception date is added" do
-        
+        before do
+          scheduled_model.add_exception_date Date.civil(1985, 1, 2)
+        end
+        it{ subject.all_occurrences.should == [Date.civil(1985,1,1), Date.civil(1985,1,3), Date.civil(1985,1,4)].map(&:to_time) }
+      end
+      
+      context "when 2 exception dates are added" do
+        before do
+          scheduled_model.add_exception_date [Date.civil(1985,1,2), Date.civil(1985,1,4)]
+        end
+        it{ subject.all_occurrences.should == [Date.civil(1985,1,1), Date.civil(1985,1,3)].map(&:to_time) }
+      end
+      
+      context "when 1 additional date is added" do
+        before do
+          scheduled_model.add_additional_date Date.civil(1985,3,1)
+        end
+        it { subject.all_occurrences.should == [Date.civil(1985,1,1), Date.civil(1985,1,2), Date.civil(1985,1,3), Date.civil(1985,1,4), Date.civil(1985,3,1)].map(&:to_time)}
+      end
+      
+      context "when 2 additional dates are added" do
+        before do
+          scheduled_model.add_additional_date [Date.civil(1985,3,1), Date.civil(1985,4,1)]
+        end
+        it { subject.all_occurrences.should == [Date.civil(1985,1,1), Date.civil(1985,1,2), Date.civil(1985,1,3), Date.civil(1985,1,4), Date.civil(1985,3,1), Date.civil(1985,4,1)].map(&:to_time)}
       end
     end
   end

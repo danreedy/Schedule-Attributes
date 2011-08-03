@@ -41,6 +41,19 @@ module ScheduleAtts
     self.exception_dates = dates    
   end
   
+  def add_additional_date(date)
+    date = ScheduleAttributes.parse_in_timezone(date) if date.is_a? String
+    dates = self.additional_dates
+    if date.is_a? Array
+      date.each do |day|
+        dates << (day.is_a?(String) ? ScheduleAttributes.parse_in_timezone(day) : day)
+      end
+    else
+      dates << date
+    end
+    self.additional_dates = dates
+  end
+  
   DAY_NAMES = Date::DAYNAMES.map(&:downcase).map(&:to_sym)
   def schedule
     @schedule ||= begin
@@ -50,6 +63,13 @@ module ScheduleAtts
         IceCube::Schedule.from_yaml(schedule_yaml)
       end
     end
+    exception_dates.each do |date|
+      @schedule.add_exception_date(date.to_time)
+    end
+    additional_dates.each do |date|
+      @schedule.add_recurrence_date(date.to_time)
+    end
+    @schedule    
   end
   
   def schedule_attributes=(options)
