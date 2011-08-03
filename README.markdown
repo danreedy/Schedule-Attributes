@@ -10,7 +10,13 @@ To use, include the `ScheduleAttributes` module in your model class.
       include ScheduleAttributes
     end
 
-Your model must respond to `:schedule_yaml` and `:schedule_yaml=`, because ScheduleAttributes will serialize and deserialize the schedule in YAML using this column.  If you are using ActiveRecord, make a string column called `schedule_yaml`. If you're using Mongoid, make a string field like so: `field :schedule_yaml`.
+Your model table is expected have the following columns:
+
+* schedule_yaml : *String* or *Text*
+* exception_dates : *String* or *Text*
+* additional_dates : *String* or *Text*
+
+If you are using ActiveRecord, make a string or text column for each attribute. If you're using Mongoid, make a string field like so: `field :schedule_yaml`.
 
 You model will gain the following methods:
 
@@ -72,3 +78,11 @@ Provides an OStruct with methods that correspond to the attributes accepted by `
 ##`schedule`
 
 Returns a the `IceCube::Schedule` object that is serialized to the model's `schedule_yaml` field. If there is none, it returns a schedule with `start_date` of the current date, recurring daily, ending never.
+
+##`add_exception_date`
+
+Accepts either a `Date`, `Time`, or `Array` consisting of dates to be explicitly excluded from the schedule.
+
+##`add_additional_date`
+
+Accepts either a `Date`, `Time`, or `Array` consisting of dates to be explicitly added to the schedule.
