@@ -2,9 +2,58 @@ require 'ice_cube'
 require 'active_support'
 require 'active_support/time_with_zone'
 require 'ostruct'
+require 'time'
+require 'yaml'
 
 module ScheduleAtts
-  # Your code goes here...
+  class_eval do
+    attr_accessor :schedule_yaml, :exception_dates, :additional_dates
+  end
+  
+  def exception_dates=(dates)
+    unless dates.is_a? Array then raise ArgumentError, "expects an Array" end
+    @exception_dates = dates.to_yaml
+  end
+  
+  def exception_dates
+    YAML::load(@exception_dates) rescue []
+  end
+  
+  def additional_dates=(dates)
+    unless dates.is_a? Array then raise ArgumentError, "expects an Array" end
+    @additional_dates = dates.to_yaml
+  end
+  
+  def additional_dates
+    YAML::load(@additional_dates) rescue []
+  end
+  
+  def add_exception_date(date)
+    date = ScheduleAttributes.parse_in_timezone(date) if date.is_a? String
+    dates = self.exception_dates
+    if date.is_a? Array
+      date.each do |day|
+        dates << (day.is_a?(String) ? ScheduleAttributes.parse_in_timezone(day) : day)
+      end
+    else
+      dates << date
+    end
+    self.exception_dates = dates    
+  end
+  
+  def add_additional_date(date)
+    date = ScheduleAttributes.parse_in_timezone(date) if date.is_a? String
+    dates = self.additional_dates
+    if date.is_a? Array
+      date.each do |day|
+        dates << (day.is_a?(String) ? ScheduleAttributes.parse_in_timezone(day) : day)
+      end
+    else
+      dates << date
+    end
+    self.additional_dates = dates
+  end
+  
   DAY_NAMES = Date::DAYNAMES.map(&:downcase).map(&:to_sym)
   def schedule
     @schedule ||= begin
@@ -14,8 +63,15 @@ module ScheduleAtts
         IceCube::Schedule.from_yaml(schedule_yaml)
       end
     end
+    exception_dates.each do |date|
+      @schedule.add_exception_date(date.to_time)
+    end
+    additional_dates.each do |date|
+      @schedule.add_recurrence_date(date.to_time)
+    end
+    @schedule    
   end
-
+  
   def schedule_attributes=(options)
     options = options.dup
     options[:interval] = options[:interval].to_i
@@ -56,10 +112,8 @@ module ScheduleAtts
 
   def schedule_attributes
     atts = {}
-
+    start_date = schedule.start_date ? schedule.start_date.to_date : Date.today
     if rule = schedule.rrules.first
-      start_date = schedule.start_date ? schedule.start_date.to_date : Date.today
-
       atts[:repeat]     = 1
       atts[:start_date] = start_date
       atts[:date]       = Date.today # for populating the other part of the form

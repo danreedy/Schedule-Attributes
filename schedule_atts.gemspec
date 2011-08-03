@@ -6,11 +6,11 @@ Gem::Specification.new do |s|
   s.name        = "schedule_atts"
   s.version     = ScheduleAtts::VERSION
   s.platform    = Gem::Platform::RUBY
-  s.authors     = ["Mike Nicholaides"]
-  s.email       = ["mike@ablegray.com"]
+  s.authors     = ["Mike Nicholaides", "Daniel Reedy"]
+  s.email       = ["mike@ablegray.com", "dan@random.so"]
   s.homepage    = "http://ablegray.com"
-  s.summary     = %q{Provides form attributes setting a recurring schedule.}
-  s.description = %q{Provides form attributes setting a recurring schedule.}
+  s.summary     = %q{Provides form attributes setting a recurring schedule and allows for individual exception and recurrance dates to be scheduled.}
+  s.description = %q{Provides form attributes setting a recurring schedule and allows for individual exception and recurrance dates to be scheduled.}
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
