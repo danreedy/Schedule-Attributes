@@ -2,6 +2,7 @@ require 'ice_cube'
 require 'active_support'
 require 'active_support/time_with_zone'
 require 'ostruct'
+require 'time'
 
 module ScheduleAtts
   # Your code goes here...
@@ -15,7 +16,7 @@ module ScheduleAtts
       end
     end
   end
-
+  
   def schedule_attributes=(options)
     options = options.dup
     options[:interval] = options[:interval].to_i
@@ -56,10 +57,8 @@ module ScheduleAtts
 
   def schedule_attributes
     atts = {}
-
+    start_date = schedule.start_date ? schedule.start_date.to_date : Date.today
     if rule = schedule.rrules.first
-      start_date = schedule.start_date ? schedule.start_date.to_date : Date.today
-
       atts[:repeat]     = 1
       atts[:start_date] = start_date
       atts[:date]       = Date.today # for populating the other part of the form

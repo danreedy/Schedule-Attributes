@@ -42,10 +42,8 @@ PLATFORMS
   ruby
 
 DEPENDENCIES
-  activesupport
   autotest
   facets
-  ice_cube (>= 0.6.4)
   rspec (>= 2.3)
   ruby-debug19
   schedule_atts!
