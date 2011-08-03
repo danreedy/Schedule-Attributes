@@ -136,4 +136,75 @@ describe ScheduledModel do
       end
     end
   end
+  
+  describe "#add_exception_date" do
+    let(:scheduled_model) { ScheduledModel.new }
+    subject{ scheduled_model.exception_dates}
+    context "a date is provided" do
+      before do
+        scheduled_model.add_exception_date Date.today
+      end
+      its(:size){ should == 1 }
+    end
+    
+    context "multiple dates are provided" do
+      before do
+        scheduled_model.add_exception_date [Date.yesterday, Date.today, Date.tomorrow]
+      end
+      its(:size){ should == 3 }
+    end
+  end
+  
+  describe "#additional_dates" do
+    describe "=" do
+      let(:scheduled_model){ ScheduledModel.new.tap{|m| m.additional_dates = additional_dates} }
+      subject{ scheduled_model.additional_dates }
+      describe "setting values" do
+        context "adding an array of dates" do
+          let(:additional_dates){ [Date.yesterday, Date.today, Date.tomorrow] }
+          its(:size) { should == additional_dates.size }
+          it{ should be_a(Array) }
+        end
+        context "providing bogus values" do
+          let(:additional_dates){ "A String!" }
+          lambda { it(should_raise(ArgumentError)) }
+        end
+      end
+    end
+  end
+  
+  describe "#exception_dates" do
+    describe "=" do
+      let(:scheduled_model){ ScheduledModel.new.tap{|m| m.exception_dates = exception_dates} }
+      subject{ scheduled_model.exception_dates }
+      
+      describe "setting values" do        
+        context "adding an array of dates" do
+          let(:exception_dates){ [Date.yesterday, Date.today, Date.tomorrow] }
+          its(:size) { should == exception_dates.size }
+          it{ should be_a(Array)}
+        end
+        context "providing bogus values" do
+          let(:exception_dates){ "A String!" }
+          lambda { it(should_raise(ArgumentError)) }
+        end
+      end
+    end
+    describe "adding and removing dates" do
+      require 'ostruct'
+      
+      let(:scheduled_model){ ScheduledModel.new.tap{|m| m.schedule_attributes = schedule_attributes } }
+      let(:schedule_attributes){ { :repeat => '1', :start_date => '1-1-1985', :interval_unit => 'day', :interval => '3', :until_date => '7-1-1985', :ends => 'eventually' } }
+      subject{ scheduled_model.schedule }
+      
+      context "when 0 dates are added" do
+        its(:start_date){ should == Date.new(1985, 1, 1).to_time }
+        it{ subject.first(3).should == [Date.civil(1985, 1, 1), Date.civil(1985, 1, 4), Date.civil(1985, 1, 7)].map(&:to_time) }
+      end
+      
+      context "when 1 exception date is added" do
+        
+      end
+    end
+  end
 end
